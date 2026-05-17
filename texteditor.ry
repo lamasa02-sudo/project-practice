@@ -1,0 +1,405 @@
+
+import tkinter as tk #оконные приложения
+from tkinter import filedialog, colorchooser, ttk #для окон файлов, выбора цвета, лучшего стиля кнопок
+#создание окна
+root = tk.Tk()
+root.title("Text Editor!!!!!")
+root.geometry("900x600")
+# шрифт
+current_font_family = "Consolas"
+current_font_size = 13
+
+# стили текста (флаги выключены)
+is_bold = False
+is_italic = False
+
+# счетчик символов
+def update_status(event=None):
+    text = text_area.get("1.0", tk.END) #берем текст с 1 строки 0 символа
+    chars = len(text) - 1
+    status_bar.config(text=f"Characters: {chars}")#обновить нижнюю панель
+
+
+def open_file():
+    file_path = filedialog.askopenfilename( #открывается проводник винды
+        filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+    )
+
+    if file_path:
+        with open(file_path, "r", encoding="utf-8") as file:#чтение файла
+            text_area.delete("1.0", tk.END)#очистка текста
+            text_area.insert(tk.END, file.read())#вставка текста
+
+        update_status()
+
+
+def save_file():
+    file_path = filedialog.asksaveasfilename(#окно куда сохранить файл
+        defaultextension=".txt",
+        filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+    )
+
+    if file_path:
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(text_area.get("1.0", tk.END))
+
+        update_status()
+def new_file():
+
+    # проверяем есть ли текст
+    text = text_area.get("1.0", tk.END).strip()
+
+    # если текст есть — сохраняем
+    if text:
+        save_file()
+    # очищаем редактор
+    text_area.delete("1.0", tk.END)
+
+    update_status()
+
+def change_text_color():
+    color = colorchooser.askcolor()[1]
+
+    if color:
+        text_area.config(fg=color)
+
+
+def change_bg():
+    color = colorchooser.askcolor()[1]
+
+    if color:
+        text_area.config(bg=color)
+
+
+def apply_font():
+    weight = "bold" if is_bold else "normal"
+    slant = "italic" if is_italic else "roman"
+
+    text_area.config(
+        font=(current_font_family, current_font_size, weight, slant)
+    )
+
+
+def toggle_bold():#жирный
+    global is_bold
+
+    is_bold = not is_bold
+    apply_font()
+
+
+def toggle_italic():#курсив
+    global is_italic
+
+    is_italic = not is_italic
+    apply_font()
+
+
+def change_font():
+    global current_font_family, current_font_size
+
+    win = tk.Toplevel(root)#мини окно
+    win.title("Font Settings")
+    win.geometry("300x200")
+
+    tk.Label(win, text="Font:").pack()
+
+    font_var = tk.StringVar(value=current_font_family)
+
+    font_menu = tk.OptionMenu(
+        win,
+        font_var,
+        "Consolas",
+        "Arial",
+        "Courier",
+        "Times New Roman"
+    )
+
+    font_menu.pack()
+
+    tk.Label(win, text="Size:").pack()
+
+    size_var = tk.StringVar(value=str(current_font_size))
+
+    tk.Entry(win, textvariable=size_var).pack()#поле ввода размера
+
+    def apply():
+        global current_font_family, current_font_size
+
+        current_font_family = font_var.get()
+        current_font_size = int(size_var.get())
+
+        apply_font()
+
+        win.destroy()
+
+    tk.Button(
+        win,
+        text="Apply",
+        command=apply
+    ).pack(pady=10)
+
+
+
+def find_replace():
+
+    win = tk.Toplevel(root)#мини окно
+    win.title("Find and Replace")
+    win.geometry("350x220")
+
+    # поиск
+    tk.Label(win, text="Find:").pack(pady=5)
+
+    find_var = tk.StringVar()
+
+    find_entry = tk.Entry(
+        win,
+        textvariable=find_var,
+        width=30
+    )
+
+    find_entry.pack()
+
+    # замена
+    tk.Label(win, text="Replace with:").pack(pady=5)
+
+    replace_var = tk.StringVar()
+
+    replace_entry = tk.Entry(
+        win,
+        textvariable=replace_var,
+        width=30
+    )
+
+    replace_entry.pack()
+
+    # поиск текста
+    def find_text():
+
+        text_area.tag_remove("found", "1.0", tk.END)
+
+        word = find_var.get()
+
+        if word:
+            start = "1.0"
+
+            while True:
+
+                start = text_area.search(
+                    word,start,
+                    stopindex=tk.END
+                )
+
+                if not start:
+                    break
+
+                end = f"{start}+{len(word)}c"
+
+                text_area.tag_add(
+                    "found",
+                    start,
+                    end
+                )
+
+                start = end
+
+            text_area.tag_config(
+                "found",
+                background="yellow"
+            )
+
+    # замена текста
+    def replace_text():
+
+        text = text_area.get("1.0", tk.END)
+
+        new_text = text.replace(
+            find_var.get(),
+            replace_var.get()
+        )
+
+        text_area.delete("1.0", tk.END)
+
+        text_area.insert(
+            "1.0",
+            new_text
+        )
+
+    tk.Button(
+        win,
+        text="Find",
+        command=find_text
+    ).pack(pady=5)
+
+    tk.Button(
+        win,
+        text="Replace All",
+        command=replace_text
+    ).pack(pady=5)
+
+
+#стиль
+style = ttk.Style()
+style.theme_use("clam")
+
+
+
+menu = tk.Menu(root)
+
+# файл
+file_menu = tk.Menu(menu, tearoff=0)
+
+file_menu.add_command(
+    label="New",
+    command=new_file
+)
+
+file_menu.add_command(
+    label="Open",
+    command=open_file
+)
+
+file_menu.add_command(
+    label="Save",
+    command=save_file
+)
+
+file_menu.add_separator()
+
+file_menu.add_command(
+    label="Exit",
+    command=root.quit
+)
+
+menu.add_cascade(
+    label="File",
+    menu=file_menu
+)
+
+# EDIT
+edit_menu = tk.Menu(menu, tearoff=0)
+
+edit_menu.add_command(
+    label="Text Color",
+    command=change_text_color
+)
+
+edit_menu.add_command(
+    label="Background Color",
+    command=change_bg
+)
+
+edit_menu.add_command(
+    label="Font",
+    command=change_font
+)
+
+edit_menu.add_command(
+    label="Find / Replace",
+    command=find_replace
+)
+
+menu.add_cascade(
+    label="Edit",
+    menu=edit_menu
+)
+
+root.config(menu=menu)
+
+
+# ПАНЕЛЬ КНОПОК
+toolbar = tk.Frame(
+    root,
+    bg="#f6dbdb"
+)
+
+toolbar.pack(fill="x")
+
+
+def make_btn(text, command):
+
+    btn = tk.Button(
+        toolbar,
+        text=text,
+        command=command,
+        bg="#f5bcbc",
+        fg="#333333",
+        activebackground="#f49494",
+        activeforeground="#000000",
+        relief="flat",
+        bd=0,
+        padx=12,
+        pady=6,
+        font=("Consolas", 10)
+    )
+
+    # hover- наведение
+    def on_enter(e):
+        btn.config(bg="#f49494")
+
+    def on_leave(e):
+        btn.config(bg="#f5bcbc")
+
+    btn.bind("<Enter>", on_enter)
+    btn.bind("<Leave>", on_leave)
+
+    return btn
+
+#кнопкиии
+make_btn("новый", new_file).pack(side="left", padx=6, pady=6)
+make_btn("открыть", open_file).pack(side="left", padx=6, pady=6)
+make_btn("сохранить", save_file).pack(side="left", padx=6)
+make_btn("шрифт", change_font).pack(side="left", padx=6)
+make_btn("B", toggle_bold).pack(side="left", padx=6)
+make_btn("I", toggle_italic).pack(side="left", padx=6)
+make_btn("цвет текста", change_text_color).pack(side="left", padx=6)
+make_btn("цвет фона", change_bg).pack(side="left", padx=6)
+make_btn("поиск", find_replace).pack(side="left", padx=6)
+
+
+#фрейм для текста
+frame = tk.Frame(root)
+
+frame.pack(
+    fill="both",
+    expand=True
+)
+#скролл
+scrollbar = tk.Scrollbar(frame)
+
+scrollbar.pack(
+    side="right",
+    fill="y"
+)
+
+text_area = tk.Text(
+    frame,
+    wrap="word",
+    font=(
+        current_font_family,
+        current_font_size
+    ),
+    yscrollcommand=scrollbar.set,
+    undo=True
+)
+
+text_area.pack(
+    fill="both",
+    expand=True
+)
+
+scrollbar.config(
+    command=text_area.yview
+)
+
+text_area.bind(
+    "<KeyRelease>",
+    update_status
+)
+# строка состояния(символы)
+status_bar = tk.Label(
+    root,
+    text="Characters: 0",
+    anchor="w"
+)
+status_bar.pack(fill="x")
+root.mainloop()
