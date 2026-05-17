@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta name="generator" content="Hugo 0.161.1"><script src="/project-practice/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=project-practice/livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dark Machine</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      background: #050505; 
+      color: #cccccc; 
+      font-family: system-ui, -apple-system, sans-serif; 
+      line-height: 1.6;
+    }
+    a { color: #ff3333; text-decoration: none; }
+    
+     
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(5,5,5,0.95) 0%, transparent 100%);
+      z-index: 100;
+    }
+    nav .logo { font-weight: 800; color: #fff; font-size: 1.2rem; letter-spacing: 0.05em; }
+    nav .links a { color: #aaa; margin-left: 2rem; font-size: 0.95rem; transition: color 0.3s; }
+    nav .links a:hover { color: #ff3333; }
+
+     
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-content {
+      width: 50%;
+      padding: 8rem 3rem 4rem 3rem;
+      z-index: 2;
+      text-align: left;
+    }
+    
+    .hero-title-line1 {
+      font-size: clamp(4rem, 10vw, 9rem);
+      font-weight: 900;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      line-height: 0.85;
+      text-shadow: 0 0 30px rgba(255, 50, 50, 0.3);
+      display: block;
+    }
+    
+    .hero-title-line2 {
+      font-size: clamp(4rem, 10vw, 9rem);
+      font-weight: 900;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      line-height: 0.85;
+      text-shadow: 0 0 30px rgba(255, 50, 50, 0.3);
+      display: block;
+      margin-bottom: 2rem;
+    }
+    
+    .hero-description {
+      max-width: 550px;
+      font-size: 1.1rem;
+      color: #999999;
+      line-height: 1.8;
+      text-align: left;
+    }
+    
+    .hero-description p { margin-bottom: 1.2rem; }
+
+     
+    .hero-image {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 60%;
+      height: 100vh;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      mask-image: linear-gradient(to right, transparent 0%, transparent 5%, black 20%, black 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 5%, black 20%, black 100%);
+      z-index: 1;
+    }
+    
+     
+    .hero-image::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to right, #050505 0%, rgba(5,5,5,0.2) 40%, transparent 100%);
+    }
+
+     
+    .main-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 4rem 2rem 6rem;
+      position: relative;
+      z-index: 2;
+      background: #050505;
+    }
+    .main-content h2 {
+      color: #ffffff;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid #ff3333;
+      padding-left: 1rem;
+    }
+    .main-content h3 {
+      color: #ff3333;
+      margin: 2.5rem 0 1rem;
+      font-size: 1.3rem;
+    }
+    .main-content p, .main-content li {
+      color: #b0b0b0;
+      margin-bottom: 1rem;
+      font-size: 1.05rem;
+    }
+    .main-content strong { color: #ffffff; }
+    
+     
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .card {
+      background: #0f0f0f;
+      border: 1px solid #222;
+      padding: 1.5rem;
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+    .card:hover { border-color: #ff3333; background: #141414; }
+    .card h4 { color: #ff3333; margin: 0 0 0.5rem 0; font-size: 1.1rem; }
+    .card p { color: #888; font-size: 0.95rem; margin: 0; line-height: 1.6; }
+    
+     
+    @media (max-width: 900px) {
+      .hero { flex-direction: column; height: auto; }
+      .hero-content { width: 100%; padding: 8rem 1.5rem 2rem; text-align: left; }
+      .hero-image { position: relative; width: 100%; height: 50vh; mask-image: linear-gradient(to bottom, transparent 0%, black 30%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%); }
+      nav { padding: 1rem; }
+      nav .links a { margin-left: 1rem; font-size: 0.85rem; }
+    }
+
+     
+    .team-page {
+      padding: 8rem 2rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .team-title {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 900;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 3rem;
+      text-shadow: 0 0 30px rgba(255, 50, 50, 0.3);
+      border-left: 4px solid #ff3333;
+      padding-left: 1.5rem;
+    }
+
+    .team-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #0f0f0f;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .team-table th {
+      color: #ff3333;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 1.5rem 1rem;
+      text-align: left;
+      border-bottom: 2px solid #ff3333;
+    }
+
+    .team-table td {
+      padding: 1.2rem 1rem;
+      color: #b0b0b0;
+      border-bottom: 1px solid #222;
+    }
+
+    .team-table tbody tr:hover {
+      background: #141414;
+    }
+
+    .team-table td:first-child {
+      color: #ff3333;
+      font-weight: 600;
+      width: 120px;
+    }
+
+    .team-table td:last-child {
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">DARK MACHINE</div>
+    <div class="links">
+      <a href="./">Главная</a>
+      <a href="./posts/">Журнал</a>
+      <a href="./about/">О проекте</a>
+      <a href="./team/">Участники</a>
+      <a href="./resources/">Ресурсы</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1>
+        <span class="hero-title-line1">DARK</span>
+        <span class="hero-title-line2">MACHINE</span>
+      </h1>
+      <div class="hero-description">
+        <p>В мрачном мире постапокалиптического будущего, где власть принадлежит машинам.</p>
+<p>Игрок управляет человеком, выращенным на гигантском заводе в качестве биологического ресурса.</p>
+<p>Из-за системного сбоя его капсула выходит из строя, и герой получает шанс выжить и выбраться наружу.</p>
+
+      </div>
+    </div>
+    
+    <div class="hero-image" style="background-image: url('/project-practice/images/hero-bg.png')"></div>
+  </section>
+
+  <main class="main-content">
+    <h2 id="о-проекте">
+  <a href="#%d0%be-%d0%bf%d1%80%d0%be%d0%b5%d0%ba%d1%82%d0%b5" class="md-heading-anchor">
+    О ПРОЕКТЕ
+  </a>
+</h2>
+<p>Dark Machine — это 2D метроидвания с глубокой атмосферой, нелинейным исследованием и динамичными боями.</p>
+<p><strong>Цель проекта:</strong> создать игру с механикой взаимоисключающих улучшений, где выбор между человечностью и модификациями влияет на сюжет и геймплей.</p>
+<p><strong>Ключевые задачи:</strong></p>
+<ul>
+<li>Разработка системы выбора</li>
+<li>Создание взаимосвязанного мира</li>
+<li>Боевая система</li>
+<li>Пиксельная графика</li>
+</ul>
+<p><strong>Ожидаемый результат:</strong> альфа-билд игры на Godot с проработанными локациями, базовым сюжетом и механиками выбора.</p>
+<p><strong>Продолжительность:</strong> 5–10 часов игрового времени.</p>
+<h3 id="-жанровые-особенности">
+  <a href="#-%d0%b6%d0%b0%d0%bd%d1%80%d0%be%d0%b2%d1%8b%d0%b5-%d0%be%d1%81%d0%be%d0%b1%d0%b5%d0%bd%d0%bd%d0%be%d1%81%d1%82%d0%b8" class="md-heading-anchor">
+    🎮 Жанровые особенности
+  </a>
+</h3>
+<div class="features-grid">
+  <div class="feature-card">
+    <h3>Нелинейный мир</h3>
+    <p>Исследуйте взаимосвязанные локации, находите секреты и скрытые проходы</p>
+  </div>
+  <div class="feature-card">
+    <h3>⚔️ Динамичные бои</h3>
+    <p>Сражайтесь с механическими врагами, используйте уклонения и контратаки</p>
+  </div>
+  <div class="feature-card">
+    <h3>🎨 Мрачная атмосфера</h3>
+    <p>Пиксельная графика и атмосферный саундтрек создают ощущение безысходности</p>
+  </div>
+  <div class="feature-card">
+    <h3>🔧 Система улучшений</h3>
+    <p>Выбирайте между человечностью и механическими модификациями</p>
+  </div>
+</div>
+
+  </main>
+
+</body>
+</html>
+ 
