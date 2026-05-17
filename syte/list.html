@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ .Site.Title }} - Журнал разработки</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #050505; color: #cccccc; font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; }
+    a { color: #ff3333; text-decoration: none; transition: color 0.3s; }
+    a:hover { color: #fff; }
+    
+    nav { position: fixed; top: 0; left: 0; right: 0; padding: 1.5rem 3rem; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(5,5,5,0.95) 0%, transparent 100%); z-index: 100; }
+    nav .logo { font-weight: 800; color: #fff; font-size: 1.2rem; letter-spacing: 0.05em; }
+    nav .links a { color: #aaa; margin-left: 2rem; font-size: 0.95rem; }
+    nav .links a:hover { color: #ff3333; }
+
+    .page-content { max-width: 1200px; margin: 0 auto; padding: 10rem 3rem 4rem; }
+    .page-title { font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3rem; text-shadow: 0 0 30px rgba(255, 50, 50, 0.4); border-left: 6px solid #ff3333; padding-left: 1.5rem; }
+
+    .posts-list { display: grid; gap: 3rem; }
+    
+    .post-container { background: rgba(15, 15, 15, 0.9); border: 1px solid #333; border-radius: 8px; overflow: hidden; }
+    .post-header { background: linear-gradient(135deg, rgba(255,51,51,0.1) 0%, rgba(10,10,10,0.95) 100%); padding: 2rem; border-bottom: 2px solid #ff3333; }
+    .post-date { color: #ff3333; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 0.5rem; font-weight: 600; }
+    .post-title { font-size: 1.8rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.03em; line-height: 1.2; }
+    
+    .post-body { padding: 2rem; }
+    .post-body p { color: #b0b0b0; line-height: 1.7; margin-bottom: 1.2rem; font-size: 1rem; }
+    .post-body strong { color: #fff; }
+    
+    .dept-section { background: rgba(10, 10, 10, 0.7); border: 1px solid #222; border-radius: 6px; padding: 1.5rem; margin: 1.5rem 0; }
+    .dept-section h3 { color: #ff3333; font-size: 1.1rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+    
+    .media-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin: 1.5rem 0; }
+    .media-placeholder { 
+      border-radius: 6px; 
+      overflow: hidden; 
+      border: 2px solid #333; 
+      aspect-ratio: 16/9;
+      background: #0a0a0a;
+    }
+    .media-placeholder img { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover;
+      display: block; 
+    }
+    
+    .media-square {
+      border-radius: 6px; 
+      overflow: hidden; 
+      border: 2px solid #333; 
+      aspect-ratio: 1/1;
+      background: #0a0a0a;
+    }
+    .media-square img { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: contain;
+      display: block; 
+      background: #111;
+    }
+    
+    .media-full { 
+      margin: 1.5rem 0; 
+      border-radius: 6px; 
+      overflow: hidden; 
+      border: 2px solid #333;
+      aspect-ratio: 16/9;
+      background: #0a0a0a;
+    }
+    .media-full img { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover;
+      display: block; 
+    }
+    
+    .task-item { display: flex; align-items: flex-start; padding: 0.4rem 0; font-size: 0.9rem; }
+    .task-status { min-width: 24px; margin-right: 0.8rem; font-weight: 700; font-size: 0.85rem; }
+    .status-done { color: #00cc66; }
+    .status-progress { color: #ffaa00; }
+    
+    .summary-box { background: rgba(20, 20, 20, 0.9); border-left: 4px solid #ff3333; padding: 1.5rem; margin: 2rem 0; border-radius: 4px; }
+    .summary-box h4 { color: #fff; margin-bottom: 1rem; font-size: 1.1rem; text-transform: uppercase; }
+    .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .summary-item { text-align: center; padding: 1rem; background: rgba(15,15,15,0.8); border-radius: 4px; }
+    .summary-number { font-size: 2rem; font-weight: 800; display: block; }
+    .summary-label { font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+    .summary-done .summary-number { color: #00cc66; }
+    .summary-progress .summary-number { color: #ffaa00; }
+    
+    .info-box { background: rgba(20, 20, 20, 0.9); border-left: 4px solid #ff3333; padding: 1rem; margin: 1.5rem 0; border-radius: 4px; }
+    .info-box strong { color: #fff; }
+    
+    .post-footer { background: rgba(5, 5, 5, 0.8); padding: 1rem 2rem; border-top: 1px solid #222; color: #666; font-size: 0.85rem; }
+    
+    @media (max-width: 968px) {
+      nav { padding: 1rem; flex-direction: column; gap: 1rem; }
+      nav .links a { margin: 0 0.5rem; font-size: 0.85rem; }
+      .page-content { padding: 8rem 1rem 2rem; }
+      .page-title { font-size: 2.5rem; }
+      .media-grid { grid-template-columns: 1fr; }
+      .post-body { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">{{ .Site.Title | upper }}</div>
+    <div class="links">
+      <a href="/">Главная</a>
+      <a href="/posts/" style="color: #ff3333;">Журнал</a>
+      <a href="/about/">О проекте</a>
+      <a href="/team/">Участники</a>
+      <a href="/resources/">Ресурсы</a>
+    </div>
+  </nav>
+
+  <main class="page-content">
+    <h1 class="page-title">ЖУРНАЛ РАЗРАБОТКИ</h1>
+    
+    <div class="posts-list">
+      
+      <!-- ПОСТ 1 -->
+      <article class="post-container">
+        <div class="post-header">
+          <div class="post-date">16 февраля 2026</div>
+          <h2 class="post-title">Первые шаги в создании Dark Machine</h2>
+        </div>
+        <div class="post-body">
+          <p>Первый отчёт о разработке Dark Machine. За прошедшую неделю команда проделала работу по созданию фундамента игры.</p>
+          
+          <div class="dept-section">
+            <h3>Визуальная часть</h3>
+            <p><strong>Концепт-арт персонажа</strong> — завершены детализированные концепт-арты главного героя в профиль и полубоком.</p>
+            <div class="media-grid">
+              <div class="media-placeholder">
+                <img src="/images/character-concept.png" alt="Концепт-арт персонажа">
+              </div>
+              <div class="media-placeholder">
+                <img src="/images/character-sprite.png" alt="Пиксель-арт спрайт">
+              </div>
+            </div>
+            <p><strong>Дизайн окружения</strong> — разработаны первые комнаты завода, био-колбы, элементы индустриального окружения и виньетки.</p>
+            <div class="media-grid">
+              <div class="media-placeholder">
+                <img src="/images/bio-capsule.png" alt="Био-колба">
+              </div>
+              <div class="media-placeholder">
+                <img src="/images/capsules-room.png" alt="Комната с колбами">
+              </div>
+            </div>
+          </div>
+          
+          <div class="dept-section">
+            <h3>Звук</h3>
+            <p>Написан OST для первых комнат — эмбиент с механическими шумами и давящей атмосферой.</p>
+          </div>
+          
+          <div class="dept-section">
+            <h3>Программирование</h3>
+            <p>Создана билд-песочница для тестирования механик:</p>
+            <div style="margin-top: 1rem;">
+              <div class="task-item"><span class="task-status status-done">✓</span><span>Движение персонажа</span></div>
+              <div class="task-item"><span class="task-status status-done">✓</span><span>Прыжок с Coyote Time</span></div>
+              <div class="task-item"><span class="task-status status-done">✓</span><span>Буферизация ввода</span></div>
+              <div class="task-item"><span class="task-status status-progress">⟳</span><span>Интеграция джойстика</span></div>
+              <div class="task-item"><span class="task-status status-progress">⟳</span><span>Система здоровья</span></div>
+            </div>
+          </div>
+          
+          <div class="info-box">
+            <strong>Pre-Alpha 0.0.1 "Apple Pie"</strong> — первый играбельный билд
+          </div>
+        </div>
+        <div class="post-footer">
+          <strong>Статус:</strong> Активная разработка
+        </div>
+      </article>
+
+      <!-- ПОСТ 2 -->
+      <article class="post-container">
+        <div class="post-header">
+          <div class="post-date">2 марта 2026</div>
+          <h2 class="post-title">Био-колбы, враги и карты уровней</h2>
+        </div>
+        <div class="post-body">
+          <p>За последние две недели команда значительно продвинулась в создании контента. Сфокусировались на детализации ключевых элементов игры.</p>
+          
+          <div class="dept-section">
+            <h3>Био-колбы</h3>
+            <p>Завершена работа над <strong>спрайтами био-колб</strong> — ключевым элементом сеттинга. Созданы 7 различных вариантов наполнения, каждый с уникальным содержимым.</p>
+            <div class="media-full">
+              <img src="/images/bio-capsules-variants.jpg" alt="Вариации био-колб">
+            </div>
+          </div>
+          
+          <div class="dept-section">
+            <h3>Дизайн врагов</h3>
+            <p>Разработаны <strong>концепт-арты и спрайты первых противников</strong> — механические существа, охраняющие завод. Созданы три типа врагов с уникальным дизайном.</p>
+            <div class="media-grid">
+              <div class="media-square">
+                <img src="/images/enemy-1.jpg" alt="Враг с топором">
+              </div>
+              <div class="media-square">
+                <img src="/images/enemy-2.jpg" alt="Враг-тележка">
+              </div>
+            </div>
+            <div class="media-full">
+              <img src="/images/enemy-3.jpg" alt="Концепт врага-паука">
+            </div>
+          </div>
+          
+          <div class="dept-section">
+            <h3>Социальные сети</h3>
+            <p>Запущены официальные страницы проекта: VK, YouTube, X (Twitter).</p>
+          </div>
+          
+          <div class="info-box">
+            <strong>Версия v0.0.2</strong> — обновлённый билд с новыми ассетами
+          </div>
+        </div>
+        <div class="post-footer">
+          <strong>Статус:</strong> Активная разработка
+        </div>
+      </article>
+
+      <!-- ПОСТ 3 -->
+      <article class="post-container">
+        <div class="post-header">
+          <div class="post-date">10 марта 2026</div>
+          <h2 class="post-title">Итоги недели: спринт в полном разгаре</h2>
+        </div>
+        <div class="post-body">
+          <p>Еженедельный отчёт о прогрессе команды. На этой неделе сфокусировались на реализации конкретных задач.</p>
+          
+          <div class="summary-box">
+            <h4>Прогресс</h4>
+            <div class="summary-grid">
+              <div class="summary-item summary-done"><span class="summary-number">14</span><span class="summary-label">Выполнено</span></div>
+              <div class="summary-item summary-progress"><span class="summary-number">7</span><span class="summary-label">В работе</span></div>
+            </div>
+          </div>
+          
+          <div class="dept-section">
+            <h3>Художники</h3>
+            <div class="task-item"><span class="task-status status-done">✓</span><span>Подготовить концепты фонов для 2-3 комнат</span></div>
+            <div class="task-item"><span class="task-status status-done">✓</span><span>Подготовить фоны по концептам (1 фон)</span></div>
+            <div class="task-item"><span class="task-status status-done">✓</span><span>Нарисовать концепт четвертого противника, летающего</span></div>
+            <div class="task-item"><span class="task-status status-done">✓</span><span>Подготовить все вариации "блока"</span></div>
+            <div class="task-item"><span class="task-status status-done">✓</span><span>Доработать анимации первого противника</span></div>
+            <div class="task-item"><span class="task-status status-progress">⟳</span><span>Сделать анимацию прыжка у персонажа</span></div>
+            <div class="task-item"><span class="task-status status-progress">⟳</span><span>Подготовить аватарку и шапку для соц.сетей</span></div>
+            <div class="task-item"><span class="task-status status-progress">⟳</span><span>Переработать арт второго противника</span></div>
+          </div>
+          
+          <div class="dept-section">
+            <h3>Медиа</h3>
+            <div class="task-item"><span class="task-status status-done">✓</span><span>Подготовить план публикаций и посты на следующие две недели</span></div>
+            <div class="task-item"><span class="task-status status-progress">⟳</span><span>Подготовить аватарку и шапку для соц.сетей</span></div>
+          </div>
+          
+          <div class="dept-section">
+            <h3>Саунд-дизайн</h3>
+            <div class="task-item"><span class="task-status status-done">✓</span><span>Подготовить библиотеку звуков</span></div>
+          </div>
+          
+          <div class="dept-section">
+            <h3>Кодеры</h3>
+            <div class="task-item"><span class="task-status status-done">✓</span><span>Доделать архитектуру кода</span></div>
+            <div class="task-item"><span class="task-status status-done">✓</span><span>Добавить контролируемый прыжок</span></div>
+            <div class="task-item"><span class="task-status status-done">✓</span><span>Добавить ограничение движения объектов по Z-координате</span></div>
+            <div class="task-item"><span class="task-status status-progress">⟳</span><span>Перенести комнаты из готового плана</span></div>
+            <div class="task-item"><span class="task-status status-progress">⟳</span><span>Добавить двух врагов со спрайтами</span></div>
+          </div>
+        </div>
+        <div class="post-footer">
+          <strong>Статус:</strong> Активная разработка &nbsp;|&nbsp; <strong>Спринт:</strong> 3 из 10 недель
+        </div>
+      </article>
+
+    </div>
+  </main>
+</body>
+</html>
