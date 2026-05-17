@@ -15,7 +15,7 @@
 ## Вариативная часть задания
 
 **Тематика:** "Python: Create a Simple Python Text Editor!"  
-**Источник** https://www.instructables.com/Create-a-Simple-Python-Text-Editor/
+**Источник:** [Instructables Tutorial](https://www.instructables.com/Create-a-Simple-Python-Text-Editor/)
 
 ## Ответственный по проектной (учебной) практике
 
