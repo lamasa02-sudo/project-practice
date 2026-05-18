@@ -1,4 +1,316 @@
+import tkinter as tk
+from tkinter import filedialog, colorchooser, ttk, messagebox
+import json
+import os
+from datetime import datetime
 
+# ========== НАСТРОЙКИ DARK MACHINE ==========
+DARK_BG = "#0a0a0a"
+DARKER_BG = "#050505"
+PANEL_BG = "#1a0a0a"
+ACCENT_RED = "#8b0000"
+ACCENT_RED_LIGHT = "#cc0000"
+TEXT_COLOR = "#c0c0c0"
+TEXT_DIM = "#606060"
+GLOW = "#ff1a1a"
+
+# ========== ОСНОВНОЕ ОКНО ==========
+root = tk.Tk()
+root.title("DARK MACHINE — СЦЕНАРНЫЙ ТЕРМИНАЛ")
+root.geometry("1200x700")
+root.configure(bg=DARK_BG)
+
+
+# ========== ФУНКЦИИ СТИЛЯ ==========
+def apply_dark_machine_style():
+    """Применяет стиль Dark Machine ко всему приложению"""
+    style = ttk.Style()
+    style.theme_use("clam")
+
+    style.configure("Dark.TFrame", background=DARK_BG)
+    style.configure("Dark.TLabel", background=DARK_BG, foreground=ACCENT_RED_LIGHT, font=("Consolas", 9))
+    style.configure("Dark.TButton", background=PANEL_BG, foreground=TEXT_COLOR,
+                    borderwidth=1, focusthickness=0, font=("Consolas", 9))
+    style.map("Dark.TButton",
+              background=[("active", ACCENT_RED), ("pressed", ACCENT_RED_LIGHT)],
+              foreground=[("active", "white")])
+
+
+def create_mechanical_button(parent, text, command, row=None, col=None, padx=4, pady=4):
+    """Создаёт кнопку в стиле механических тумблеров"""
+    btn = tk.Button(
+        parent,
+        text=text,
+        command=command,
+        bg=PANEL_BG,
+        fg=TEXT_COLOR,
+        activebackground=ACCENT_RED,
+        activeforeground="white",
+        relief="flat",
+        bd=1,
+        padx=12,
+        pady=6,
+        font=("Consolas", 9, "bold"),
+        cursor="hand2"
+    )
+
+    def on_enter(e):
+        btn.config(bg=ACCENT_RED, fg="white")
+
+    def on_leave(e):
+        btn.config(bg=PANEL_BG, fg=TEXT_COLOR)
+
+    btn.bind("<Enter>", on_enter)
+    btn.bind("<Leave>", on_leave)
+
+    if row is not None and col is not None:
+        btn.grid(row=row, column=col, padx=padx, pady=pady, sticky="ew")
+    else:
+        btn.pack(side="left", padx=padx, pady=pady)
+
+    return btn
+
+
+# ========== ОБНОВЛЕНИЕ СОСТОЯНИЯ ==========
+def update_status(event=None):
+    """Обновляет счётчик символов и статистику"""
+    text = text_area.get("1.0", tk.END)
+    chars = len(text) - 1
+    words = len(text.split())
+    lines = len(text.splitlines())
+
+    status_text = f"🔴 СИМВОЛЫ: {chars}  |  📝 СЛОВА: {words}  |  📄 СТРОКИ: {lines}"
+    status_bar.config(text=status_text)
+
+    return chars
+
+
+# ========== ФАЙЛОВЫЕ ОПЕРАЦИИ ==========
+def open_file():
+    file_path = filedialog.askopenfilename(
+        filetypes=[("Dark Machine Script", "*.dms"), ("Text files", "*.txt"), ("All files", "*.*")]
+    )
+    if file_path:
+        with open(file_path, "r", encoding="utf-8") as file:
+            text_area.delete("1.0", tk.END)
+            text_area.insert(tk.END, file.read())
+        update_status()
+        root.title(f"DARK MACHINE — {os.path.basename(file_path)}")
+
+
+def save_file():
+    file_path = filedialog.asksaveasfilename(
+        defaultextension=".dms",
+        filetypes=[("Dark Machine Script", "*.dms"), ("Text files", "*.txt"), ("All files", "*.*")]
+    )
+    if file_path:
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(text_area.get("1.0", tk.END))
+        update_status()
+        root.title(f"DARK MACHINE — {os.path.basename(file_path)}")
+
+
+def new_file():
+    if text_area.get("1.0", tk.END).strip():
+        if messagebox.askyesno("DARK MACHINE", "Сохранить текущий сценарий перед созданием нового?"):
+            save_file()
+    text_area.delete("1.0", tk.END)
+    root.title("DARK MACHINE — НОВЫЙ СЦЕНАРИЙ")
+    update_status()
+
+
+def export_to_json():
+    """Экспорт сценария в JSON для движка игры"""
+    file_path = filedialog.asksaveasfilename(
+        defaultextension=".json",
+        filetypes=[("JSON files", "*.json")]
+    )
+    if file_path:
+        script_data = {
+            "title": root.title(),
+            "content": text_area.get("1.0", tk.END),
+            "export_date": datetime.now().isoformat(),
+            "word_count": len(text_area.get("1.0", tk.END).split()),
+            "char_count": update_status()
+        }
+        with open(file_path, "w", encoding="utf-8") as file:
+            json.dump(script_data, file, indent=2, ensure_ascii=False)
+        messagebox.showinfo("DARK MACHINE", "Сценарий экспортирован в JSON")
+
+
+# ========== ТЕКСТОВЫЕ ОПЕРАЦИИ ==========
+current_font_family = "Courier"
+current_font_size = 12
+is_bold = False
+is_italic = False
+
+
+def apply_font():
+    weight = "bold" if is_bold else "normal"
+    slant = "italic" if is_italic else "roman"
+    text_area.config(font=(current_font_family, current_font_size, weight, slant))
+
+
+def toggle_bold():
+    global is_bold
+    is_bold = not is_bold
+    apply_font()
+
+
+def toggle_italic():
+    global is_italic
+    is_italic = not is_italic
+    apply_font()
+
+
+def change_text_color():
+    color = colorchooser.askcolor()[1]
+    if color:
+        text_area.config(fg=color)
+
+
+def change_bg():
+    color = colorchooser.askcolor()[1]
+    if color:
+        text_area.config(bg=color)
+
+
+def find_replace():
+    win = tk.Toplevel(root)
+    win.title("DARK MACHINE — ПОИСК И ЗАМЕНА")
+    win.geometry("400x250")
+    win.configure(bg=DARK_BG)
+
+    tk.Label(win, text="ПОИСК:", bg=DARK_BG, fg=ACCENT_RED_LIGHT,
+             font=("Consolas", 10, "bold")).pack(pady=10)
+    find_entry = tk.Entry(win, width=40, bg=PANEL_BG, fg=TEXT_COLOR,
+                          insertbackground=ACCENT_RED_LIGHT, font=("Consolas", 10))
+    find_entry.pack(pady=5)
+
+    tk.Label(win, text="ЗАМЕНИТЬ НА:", bg=DARK_BG, fg=ACCENT_RED_LIGHT,
+             font=("Consolas", 10, "bold")).pack(pady=10)
+    replace_entry = tk.Entry(win, width=40, bg=PANEL_BG, fg=TEXT_COLOR,
+                             insertbackground=ACCENT_RED_LIGHT, font=("Consolas", 10))
+    replace_entry.pack(pady=5)
+
+    def find_text():
+        text_area.tag_remove("found", "1.0", tk.END)
+        word = find_entry.get()
+        if word:
+            start = "1.0"
+            while True:
+                start = text_area.search(word, start, stopindex=tk.END)
+                if not start:
+                    break
+                end = f"{start}+{len(word)}c"
+                text_area.tag_add("found", start, end)
+                start = end
+            text_area.tag_config("found", background=ACCENT_RED, foreground="white")
+
+    def replace_text():
+        text = text_area.get("1.0", tk.END)
+        new_text = text.replace(find_entry.get(), replace_entry.get())
+        text_area.delete("1.0", tk.END)
+        text_area.insert("1.0", new_text)
+        win.destroy()
+
+    create_mechanical_button(win, "НАЙТИ", find_text).pack(pady=5)
+    create_mechanical_button(win, "ЗАМЕНИТЬ ВСЁ", replace_text).pack(pady=5)
+
+
+# ========== ИНТЕРФЕЙС ==========
+apply_dark_machine_style()
+
+# Верхняя панель инструментов
+toolbar = tk.Frame(root, bg=PANEL_BG, height=50)
+toolbar.pack(fill="x")
+
+# ASCII-графика
+ascii_dark = r"""_/////          _/       _///////    _//   _//
+_//   _//      _/ //     _//    _//  _//  _//
+_//    _//    _/  _//    _//    _//  _// _//
+_//    _//   _//   _//   _/ _//      _/ _/
+_//    _//  _////// _//  _//  _//    _//  _//
+_//   _//  _//       _// _//    _//  _//   _//
+_/////    _//         _//_//      _//_//     _//"""
+
+logo = tk.Label(
+    toolbar,
+    text=ascii_dark,
+    bg=PANEL_BG,
+    fg=ACCENT_RED,
+    font=("Courier", 7, "bold"),
+    justify="left"
+)
+logo.pack(side="left", padx=10, pady=2)
+
+# Кнопки
+button_frame = tk.Frame(toolbar, bg=PANEL_BG)
+button_frame.pack(side="left", padx=20)
+
+create_mechanical_button(button_frame, "НОВЫЙ", new_file)
+create_mechanical_button(button_frame, "ОТКРЫТЬ", open_file)
+create_mechanical_button(button_frame, "СОХРАНИТЬ", save_file)
+create_mechanical_button(button_frame, "B", toggle_bold)
+create_mechanical_button(button_frame, "I", toggle_italic)
+create_mechanical_button(button_frame, "📦 JSON", export_to_json)
+
+# Текстовая область
+frame = tk.Frame(root, bg=DARK_BG)
+frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+scrollbar = tk.Scrollbar(frame, bg=PANEL_BG, troughcolor=DARK_BG)
+scrollbar.pack(side="right", fill="y")
+
+text_area = tk.Text(
+    frame,
+    wrap="word",
+    font=(current_font_family, current_font_size),
+    bg="#0a0a0a",
+    fg=TEXT_COLOR,
+    insertbackground=ACCENT_RED_LIGHT,
+    selectbackground=ACCENT_RED,
+    selectforeground="white",
+    relief="flat",
+    bd=0,
+    padx=15,
+    pady=15,
+    undo=True,
+    yscrollcommand=scrollbar.set
+)
+
+text_area.pack(fill="both", expand=True)
+scrollbar.config(command=text_area.yview)
+text_area.bind("<KeyRelease>", update_status)
+
+# Статусная строка
+status_bar = tk.Label(
+    root,
+    text="🔴 СИСТЕМА АКТИВНА | СЦЕНАРНЫЙ ТЕРМИНАЛ DARK MACHINE",
+    anchor="w",
+    bg=DARKER_BG,
+    fg=ACCENT_RED,
+    font=("Consolas", 8),
+    height=2
+)
+status_bar.pack(fill="x")
+
+# Приветствие
+welcome_text = """ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+█ DARK MACHINE — СЦЕНАРНЫЙ ТЕРМИНАЛ v.1.0           █
+█═══════════════════════════════════════════════════█
+ █ Система загружена.                              █
+█                                                   █
+ █ Добро пожаловать в тёмный сценарный редактор    █
+█                                                   █
+ █> СКОРОСТЬ: 100% | ЦЕЛОСТНОСТЬ: ОНЛАЙН           █
+█ > ЖДУ СЦЕНАРИЙ...                                 █
+ ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+"""
+text_area.insert("1.0", welcome_text)
+update_status()
+
+root.mainloop()
 import tkinter as tk #оконные приложения
 from tkinter import filedialog, colorchooser, ttk #для окон файлов, выбора цвета, лучшего стиля кнопок
 #создание окна
